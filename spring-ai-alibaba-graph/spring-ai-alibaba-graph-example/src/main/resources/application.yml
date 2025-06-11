@@ -45,10 +45,10 @@ spring:
           api-key: ${TAVILY_API_KEY}
           enabled: true
     dashscope:
-      api-key: ${DASHSCOPE_API_KEY}
+      api-key: sk-6b76c9f5936a4a5d8facb6daa5cd3b58
     openai:
       base-url: https://dashscope.aliyuncs.com/compatible-mode
-      api-key: ${DASHSCOPE_API_KEY}
+      api-key: sk-6b76c9f5936a4a5d8facb6daa5cd3b58
       chat:
         options:
           model: qwen-max-latest

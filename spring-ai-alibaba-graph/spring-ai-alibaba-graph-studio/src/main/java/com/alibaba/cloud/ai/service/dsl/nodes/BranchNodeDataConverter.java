@@ -70,12 +70,13 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 								.setComparisonOperator((String) conditionMap.get("comparison_operator"))
 								.setVariableSelector(new VariableSelector(selectors.get(0), selectors.get(1)));
 						}).collect(Collectors.toList());
-						cases.add(new Case().setId((String) caseData.get("id"))
+						cases.add(new Case().setCaseId((String) caseData.get("id"))
 							.setLogicalOperator((String) caseData.get("logical_operator"))
 							.setConditions(conditions));
 					}
 				}
-				return new BranchNodeData(List.of(), List.of()).setCases(cases);
+                String nodeId = (String)data.get("id");
+				return new BranchNodeData(List.of(), List.of(), nodeId + "_output").setCases(cases);
 			}
 
 			@Override
@@ -89,7 +90,7 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 								List.of(condition.getVariableSelector().getNamespace(),
 										condition.getVariableSelector().getName())))
 						.toList();
-					return Map.of("id", c.getId(), "case_id", c.getId(), "conditions", conditions, "logical_operator",
+					return Map.of("id", c.getCaseId(), "case_id", c.getCaseId(), "conditions", conditions, "logical_operator",
 							c.getLogicalOperator());
 				}).toList();
 				data.put("cases", caseMaps);

@@ -21,18 +21,18 @@ import java.util.List;
 
 public class Case {
 
-	private String id;
+	private String caseId;
 
 	private String logicalOperator;
 
 	private List<Condition> conditions;
 
-	public String getId() {
-		return id;
+	public String getCaseId() {
+		return caseId;
 	}
 
-	public Case setId(String id) {
-		this.id = id;
+	public Case setCaseId(String caseId) {
+		this.caseId = caseId;
 		return this;
 	}
 

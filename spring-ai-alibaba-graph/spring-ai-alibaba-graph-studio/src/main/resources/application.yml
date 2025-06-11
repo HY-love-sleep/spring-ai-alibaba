@@ -9,6 +9,6 @@ spring:
     import: classpath:initializr.yml
   ai:
     dashscope:
-      api-key: ${AI_DASH_SCOPE_API_KEY}
+      api-key: sk-6b76c9f5936a4a5d8facb6daa5cd3b58
 server:
   port: 8080
