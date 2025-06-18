@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://172.16.22.18:3306/test_hy?characterEncoding=utf8&connectTimeout=100000&socketTimeout=300000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+    username: remote
+    password: "zUTk%@uvs5EFdDY@jSDd"
+
+  application:
+    name: spring-ai-alibaba-graph-sec
+
+  ai:
+    dashscope:
+      api-key: sk-6b76c9f5936a4a5d8facb6daa5cd3b58
+      chat:
+        options:
+          model: qwen-plus
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
