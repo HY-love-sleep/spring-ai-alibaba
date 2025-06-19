@@ -18,12 +18,17 @@
 
 package com.cubigdata.sec;
 
+import com.alibaba.cloud.ai.dashscope.rag.DashScopeCloudStore;
+import com.alibaba.cloud.ai.dashscope.rag.DashScopeStoreOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.openai.OpenAiEmbeddingModel;
+import org.springframework.ai.openai.OpenAiEmbeddingOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.reader.TextReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
@@ -55,7 +60,7 @@ public class Application {
     CommandLineRunner vectorIngestRunner(
             @Value("${rag.source:classpath:rag/rag_friendly_classification.txt}") Resource ragSource,
             EmbeddingModel embeddingModel,
-            VectorStore classificationVectorStore
+            @Qualifier("classificationVectorStore") VectorStore classificationVectorStore
     ) {
         return args -> {
             logger.info("🔄 正在向量化加载分类分级知识库...");
@@ -64,7 +69,7 @@ public class Application {
 
             // 测试：相似性搜索一条
             var results = classificationVectorStore.similaritySearch("人事档案数据");
-            results.forEach(doc -> logger.info("🔍 分类分级相似知识片段: {}", doc.getText()));
+//            results.forEach(doc -> logger.info("🔍 分类分级相似知识片段: {}", doc.getText()));
         };
     }
 
@@ -72,7 +77,7 @@ public class Application {
     CommandLineRunner vectorIngestRunner2(
             @Value("${rag.source:classpath:rag/sensitive_words.txt}") Resource ragSource,
             EmbeddingModel embeddingModel,
-            VectorStore sensitiveVectorStore
+            @Qualifier("sensitiveVectorStore") VectorStore sensitiveVectorStore
     ) {
         return args -> {
             logger.info("🔄 正在向量化加载敏感词知识库...");
@@ -81,7 +86,7 @@ public class Application {
 
             // 测试：相似性搜索一条
             var results = sensitiveVectorStore.similaritySearch("苍井空");
-            results.forEach(doc -> logger.info("🔍 敏感词相似知识片段: {}", doc.getText()));
+//            results.forEach(doc -> logger.info("🔍 敏感词相似知识片段: {}", doc.getText()));
         };
     }
 
@@ -89,9 +94,15 @@ public class Application {
      * 分类分级向量存储，用于后续 RAG 检索
      */
     @Bean
-    @Primary
     public VectorStore classificationVectorStore(EmbeddingModel embeddingModel) {
-        return SimpleVectorStore.builder(embeddingModel).build();
+        return SimpleVectorStore
+                .builder(embeddingModel).build();
+    }
+
+    @Bean
+    public VectorStore sensitiveVectorStore(EmbeddingModel embeddingModel) {
+        return SimpleVectorStore
+                .builder(embeddingModel).build();
     }
 
     /**
