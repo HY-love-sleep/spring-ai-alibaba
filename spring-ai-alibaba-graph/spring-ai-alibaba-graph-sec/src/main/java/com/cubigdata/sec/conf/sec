@@ -1,0 +1,23 @@
+@startuml sec_flow
+skinparam usecaseFontSize 14
+skinparam usecaseStereotypeFontSize 12
+skinparam hexagonFontSize 14
+skinparam hexagonStereotypeFontSize 12
+title "sec flow"
+footer
+
+powered by spring-ai-alibaba
+end footer
+circle start<<input>> as __START__
+circle stop as __END__
+usecase "sensitive"<<Node>>
+usecase "clft"<<Node>>
+hexagon "check state" as condition1<<Condition>>
+"__START__" -down-> "sensitive"
+"sensitive" .down.> "condition1"
+"condition1" .down.> "__END__": "yes"
+'"sensitive" .down.> "__END__": "yes"
+"condition1" .down.> "clft": "no"
+'"sensitive" .down.> "clft": "no"
+"clft" -down-> "__END__"
+@enduml
