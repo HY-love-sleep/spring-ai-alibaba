@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://172.16.22.18:3306/test_hy?characterEncoding=utf8&connectTimeout=100000&socketTimeout=300000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
     username: remote
-    password: "zUTk%@uvs5EFdDY@jSDd"
+    password:
 
   application:
     name: spring-ai-alibaba-graph-sec
