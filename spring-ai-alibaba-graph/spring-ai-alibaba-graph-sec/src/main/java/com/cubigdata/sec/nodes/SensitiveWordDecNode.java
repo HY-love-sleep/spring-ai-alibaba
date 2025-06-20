@@ -12,7 +12,7 @@ import java.util.Set;
  * @author yHong
  * @version 1.0
  * @since 2025/6/18 15:58
- * todo:改为functionCall
+ * todo:改为httpNode调用智能中心接口
  */
 @Slf4j
 public class SensitiveWordDecNode implements NodeAction {

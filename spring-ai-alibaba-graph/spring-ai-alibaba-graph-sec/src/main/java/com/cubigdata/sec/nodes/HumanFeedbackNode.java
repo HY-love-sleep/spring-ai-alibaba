@@ -28,15 +28,15 @@ public class HumanFeedbackNode implements NodeAction {
 
         logger.info("human_feedback node is running.");
         HashMap<String, Object> resultMap = new HashMap<>();
-        String nextStep = StateGraph.END;
 
-        Map<String, Object> feedBackData = state.humanFeedback().data();
-        boolean feedback = (boolean) feedBackData.getOrDefault("feed_back", true);
-        if (feedback) {
-            nextStep = "translate";
-        }
+        Map<String, Object> feedbackData = state.humanFeedback().data();
+        boolean isApproved = Boolean.parseBoolean(String.valueOf(feedbackData.getOrDefault("feed_back", true)));
+        String feedbackReason = (String) feedbackData.getOrDefault("feedback_reason", "");
+        String nextStep = isApproved ? "saveTool" : "clft";
 
         resultMap.put("human_next_node", nextStep);
+        resultMap.put("feedback_reason", feedbackReason);
+        resultMap.put("feedback", isApproved);
         logger.info("human_feedback node -> {} node", nextStep);
         return resultMap;
     }

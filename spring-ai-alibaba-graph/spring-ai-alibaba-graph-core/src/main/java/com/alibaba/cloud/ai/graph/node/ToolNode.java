@@ -23,6 +23,7 @@ import java.util.Map;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
@@ -66,13 +67,26 @@ public class ToolNode implements NodeAction {
 			this.llmResponseKey = LlmNode.LLM_RESPONSE_KEY;
 		}
 
-		this.assistantMessage = (AssistantMessage) state.value(this.llmResponseKey).orElseGet(() -> {
-			// if key not set, use 'messages' as default
-			List<Message> messages = (List<Message>) state.value("messages").orElseThrow();
-			return messages.get(messages.size() - 1);
-		});
+        Object obj  = state.value(this.llmResponseKey).orElseGet(() -> {
+            // if key not set, use 'messages' as default
+            List<Message> messages = (List<Message>) state.value("messages").orElseThrow();
+            return messages.get(messages.size() - 1);
+        });
 
-		ToolResponseMessage toolResponseMessage = executeFunction(assistantMessage, state);
+        AssistantMessage assistantMessage;
+        if (obj instanceof AssistantMessage) {
+            assistantMessage = (AssistantMessage) obj;
+        } else if (obj instanceof Map map) {
+            // JSON deserialized as AssistantMessage
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerSubtypes(AssistantMessage.class);
+            assistantMessage = objectMapper.convertValue(map, AssistantMessage.class);
+        } else {
+            throw new IllegalStateException("Unsupported type for : " + obj.getClass());
+        }
+        this.assistantMessage = assistantMessage;
+
+        ToolResponseMessage toolResponseMessage = executeFunction(assistantMessage, state);
 
 		Map<String, Object> updatedState = new HashMap<>();
 		updatedState.put("messages", toolResponseMessage);

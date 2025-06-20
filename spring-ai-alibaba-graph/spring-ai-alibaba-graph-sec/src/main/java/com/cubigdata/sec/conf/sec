@@ -11,15 +11,24 @@ end footer
 circle start<<input>> as __START__
 circle stop as __END__
 usecase "sensitive"<<Node>>
+usecase "answer"<<Node>>
 usecase "clft"<<Node>>
+usecase "human"<<Node>>
 usecase "saveTool"<<Node>>
 hexagon "check state" as condition1<<Condition>>
+hexagon "check state" as condition2<<Condition>>
 "__START__" -down-> "sensitive"
+"answer" -down-> "__END__"
 "sensitive" .down.> "condition1"
+"condition1" .down.> "answer": "yes"
+'"sensitive" .down.> "answer": "yes"
 "condition1" .down.> "clft": "no"
 '"sensitive" .down.> "clft": "no"
-"condition1" .down.> "__END__": "yes"
-'"sensitive" .down.> "__END__": "yes"
-"clft" -down-> "saveTool"
+"clft" -down-> "human"
+"human" .down.> "condition2"
+"condition2" .down.> "clft"
+'"human" .down.> "clft"
+"condition2" .down.> "saveTool"
+'"human" .down.> "saveTool"
 "saveTool" -down-> "__END__"
 @enduml

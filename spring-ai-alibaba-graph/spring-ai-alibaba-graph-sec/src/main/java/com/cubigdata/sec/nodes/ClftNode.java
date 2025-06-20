@@ -7,11 +7,11 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -42,15 +42,17 @@ public class ClftNode implements NodeAction {
                 .defaultOptions(ToolCallingChatOptions.builder().toolCallbacks(List.of(fieldSaveTool)).internalToolExecutionEnabled(false).build())
 
                 .defaultAdvisors(
-//                        PromptChatMemoryAdvisor.builder(chatMemory).build(),
                         QuestionAnswerAdvisor.builder(classificationVectorStore).searchRequest(SearchRequest.builder().topK(5).similarityThresholdAll().build()).build(), new SimpleLoggerAdvisor()).build();
     }
 
     @Override
     public Map<String, Object> apply(OverAllState state) throws Exception {
         String fieldName = (String) state.value("field").orElseThrow();
-
-        AssistantMessage assistantMessage = chatClient.prompt().user(fieldName).call().chatResponse().getResult().getOutput();
+        String feedback = state.value("feedback_reason", "");
+        String finalPrompt = fieldName + (StringUtils.hasText(feedback)
+                ? "\n注意：用户上一次反馈如下，请结合修正建议重新判断：\n" + feedback
+                : "");
+        AssistantMessage assistantMessage = chatClient.prompt().user(finalPrompt).call().chatResponse().getResult().getOutput();
 
         return Map.of(OUTPUT_KEY, assistantMessage);
     }
