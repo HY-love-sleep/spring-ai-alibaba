@@ -17,9 +17,14 @@ import com.cubigdata.sec.nodes.ClftNode;
 import com.cubigdata.sec.nodes.HumanFeedbackNode;
 import com.cubigdata.sec.nodes.SensitiveWordDecNode;
 import com.cubigdata.sec.tools.FieldSaveTool;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.tool.resolution.ToolCallbackResolver;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.cloud.ai.graph.StateGraph.END;
 import static com.alibaba.cloud.ai.graph.StateGraph.START;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
@@ -65,7 +69,22 @@ public class SecGraphBuilder {
         };
 
         AgentStateFactory<OverAllState> factory = OverAllState::new;
-        StateGraph stateGraph = new StateGraph(keyStrategyFactory, new JsonStateSerializerWithTypeInfo(factory));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.activateDefaultTyping(
+                mapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+
+        // 注册反序列化器
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(AssistantMessage.class, new AssistantMessageDeserializer());
+        module.addDeserializer(ToolResponseMessage.class, new ToolResponseMessageDeserializer());
+        mapper.registerModule(module);
+
+        JsonStateSerializerWithTypeInfo serializer = new JsonStateSerializerWithTypeInfo(factory, mapper);
+
+        StateGraph stateGraph = new StateGraph(keyStrategyFactory, serializer);
         stateGraph.addEdge(START, "sensitive")
                 .addNode("sensitive", node_async(new SensitiveWordDecNode()))
                 .addNode("answer", node_async(AnswerNode.builder().answer("您的输入{{field}}包含了敏感内容！").build()))

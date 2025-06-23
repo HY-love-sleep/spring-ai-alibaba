@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.ToolResponseMessage;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -19,19 +17,19 @@ public class JsonStateSerializerWithTypeInfo extends PlainTextStateSerializer {
 
     private final ObjectMapper mapper;
 
+    public JsonStateSerializerWithTypeInfo(AgentStateFactory<OverAllState> stateFactory, ObjectMapper mapper) {
+        super(stateFactory);
+        this.mapper = mapper;
+    }
+
     public JsonStateSerializerWithTypeInfo(AgentStateFactory<OverAllState> stateFactory) {
         super(stateFactory);
         this.mapper = new ObjectMapper();
-
-        this.mapper.addMixIn(AssistantMessage.class, AssistantMessageMixin.class);
-        this.mapper.addMixIn(ToolResponseMessage.class, ToolResponseMessageMixin.class);
-
         this.mapper.activateDefaultTyping(
                 this.mapper.getPolymorphicTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL,
                 JsonTypeInfo.As.PROPERTY
         );
-
         this.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
