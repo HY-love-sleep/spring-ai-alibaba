@@ -70,6 +70,7 @@ public class SecGraphController {
 
         Map<String, Object> objectMap = new HashMap<>();
         objectMap.put("feed_back", feedBack);
+        objectMap.put("feedback_reason", humanReason);
         state.withHumanFeedback(new OverAllState.HumanFeedback(objectMap, "feed_back"));
 
         Sinks.Many<ServerSentEvent<String>> sink = Sinks.many().unicast().onBackpressureBuffer();

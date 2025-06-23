@@ -3,11 +3,13 @@ package com.cubigdata.sec.conf;
 import com.alibaba.cloud.ai.graph.GraphRepresentation;
 import com.alibaba.cloud.ai.graph.KeyStrategy;
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
+import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.action.AsyncEdgeAction;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.alibaba.cloud.ai.graph.node.AnswerNode;
 import com.alibaba.cloud.ai.graph.node.ToolNode;
+import com.alibaba.cloud.ai.graph.state.AgentStateFactory;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
 import com.cubigdata.sec.dispatcher.HumanFeedbackDispatcher;
 import com.cubigdata.sec.dispatcher.SensitiveDispatcher;
@@ -62,7 +64,8 @@ public class SecGraphBuilder {
             return keyStrategyHashMap;
         };
 
-        StateGraph stateGraph = new StateGraph(keyStrategyFactory);
+        AgentStateFactory<OverAllState> factory = OverAllState::new;
+        StateGraph stateGraph = new StateGraph(keyStrategyFactory, new JsonStateSerializerWithTypeInfo(factory));
         stateGraph.addEdge(START, "sensitive")
                 .addNode("sensitive", node_async(new SensitiveWordDecNode()))
                 .addNode("answer", node_async(AnswerNode.builder().answer("您的输入{{field}}包含了敏感内容！").build()))
