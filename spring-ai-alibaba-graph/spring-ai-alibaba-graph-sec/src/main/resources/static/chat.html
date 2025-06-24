@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>智能助手</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+            background: #f9f9f9;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user {
+            color: blue;
+        }
+        .assistant {
+            color: green;
+        }
+        #input-area {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>智能助手</h2>
+<div id="chat"></div>
+
+<div id="input-area">
+    <input type="text" id="userInput" placeholder="请输入..." style="width: 70%;">
+    <button onclick="sendMessage()">发送</button>
+</div>
+
+<script>
+    function appendMessage(sender, text) {
+        const chat = document.getElementById('chat');
+        const div = document.createElement('div');
+        div.className = 'message ' + (sender === '你' ? 'user' : 'assistant');
+        div.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('userInput').value.trim();
+        if (!input) return;
+
+        appendMessage("你", input);
+        document.getElementById('userInput').value = '';
+
+        const sse = new EventSource("/chat/stream?message=" + encodeURIComponent(input));
+
+        sse.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+
+            if (data.node === "clft" && data.data && data.data.clft_res) {
+                const text = data.data.clft_res.text || "助手暂无回答";
+                appendMessage("助手", text);
+
+                // 添加反馈按钮
+                const chat = document.getElementById('chat');
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.innerHTML = `
+                        <button onclick="sendFeedback(true)">👍 有用</button>
+                        <button onclick="sendFeedback(false)">👎 无用</button>
+                    `;
+                chat.appendChild(feedbackDiv);
+                chat.scrollTop = chat.scrollHeight;
+
+                sse.close();
+            }
+        };
+
+        sse.onerror = function() {
+            appendMessage("助手", "连接出错");
+            sse.close();
+        };
+    }
+
+    function sendFeedback(isUseful) {
+        fetch("/chat/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ useful: isUseful })
+        }).then(() => {
+            appendMessage("系统", isUseful ? "感谢反馈：有用" : "感谢反馈：无用");
+        });
+    }
+</script>
+</body>
+</html>
